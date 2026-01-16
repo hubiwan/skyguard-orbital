@@ -1,50 +1,78 @@
-# 📱 ctOS Profiler - Advanced OSINT Intelligence Tool
+# 🛰️ SkyGuard - Real-time Orbital Tracking System
 
-![Python](https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/DJANGO-REST-092E20?style=for-the-badge&logo=django&logoColor=white)
-![React](https://img.shields.io/badge/REACT-JS-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Capacitor](https://img.shields.io/badge/CAPACITOR-MOBILE-1199EE?style=for-the-badge&logo=capacitor&logoColor=white)
+![Python](https://img.shields.io/badge/PYTHON-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/DJANGO-5.0-092E20?style=for-the-badge&logo=django&logoColor=white)
+![Globe.GL](https://img.shields.io/badge/3D_VISUALIZATION-GLOBE.GL-FF3E00?style=for-the-badge&logo=three.js&logoColor=white)
+![SQLite](https://img.shields.io/badge/DATABASE-SQLITE-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 
-An advanced Open Source Intelligence (OSINT) web and mobile application inspired by the "Profiler" HUD from the Watch Dogs franchise. This tool allows users to scan digital footprints across multiple social platforms in real-time.
+**SkyGuard** is an advanced satellite monitoring system leveraging the **SGP4 physical model** for real-time 3D visualization and orbital pass predictions over key global locations.
+
+---
+
+<div align="center">
+  <img src="assets/screenshot.png" alt="SkyGuard Dashboard" width="800" />
+  <p><em>Real-time satellite tracking interface with Cyberpunk HUD styling</em></p>
+</div>
 
 ---
 
 ## 🛠 Tech Stack
 
-This project follows Clean Code principles and a Decoupled Architecture:
+The project is built as a highly efficient web application without heavy frontend build tools (No-Build step):
 
-* **Backend:** Python 3.x & Django REST Framework (Scalable API).
-* **Frontend:** React.js (Component-based UI with Framer Motion animations).
-* **Mobile:** Capacitor (Cross-platform native Android integration).
-* **Database:** SQLite (Persistent logging of all scan activities).
-* **Deployment:** Render.com (Cloud-based Backend Node).
+* **Backend:** Python 3.12+ & Django 5.0.
+* **Physics Engine:** `sgp4` library for orbital mechanics & `requests` for telemetry fetching.
+* **Frontend:** HTML5, CSS3 (Cyberpunk HUD Aesthetic), JavaScript (ES6+).
+* **Visualization:** `Globe.gl` (Three.js wrapper) loaded via CDN for high-performance 3D rendering.
+* **Database:** SQLite (Integrated with Django).
 
 ---
 
 ## ✨ Key Features
 
-* **Global Data Nodes:** Scans GitHub, Reddit, Facebook, Instagram, Steam, and Linktree.
-* **Deep Interception:** Extracts public emails and geolocation data via GitHub API.
-* **AI Personality Profiling:** Algorithmic subject analysis based on social presence and bio metadata.
-* **Smart Filtering:** Content-analysis engine to eliminate "False Positive" results.
-* **Central Data Log:** Automatic database logging of every identified subject (Viewable via Django Admin).
+* **Real-time 3D Rendering:** Interactive Earth model with live satellite orbit visualization.
+* **SGP4 Implementation:** Custom physics engine calculating accurate trajectories from TLE data.
+* **Orbital Predictions:** Algorithms to predict satellite passes over specific geographic locations.
+* **Cyberpunk UI:** Immersive "Heads-Up Display" (HUD) interface style.
+* **Zero-Config Frontend:** Libraries are loaded directly via CDN, removing the need for `npm` or webpack.
 
 ---
 
 ## 🚀 Installation & Setup
 
-### 1. Backend Node (Django)
+To run the project locally, you only need Python installed.
+
+### 1. Backend Setup
+
+Open your terminal in the root directory:
 
 ```bash
-# Activate environment
-venv\Scripts\activate
+# 1. Install dependencies
+pip install django sgp4 requests
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Database migrations
-python manage.py makemigrations
+# 2. Initialize Database (Migrations)
 python manage.py migrate
 
-# Start local server
+# 3. Start Development Server
 python manage.py runserver
+
+2. Accessing the Application
+
+Once the server is running, open your browser and navigate to:
+
+http://127.0.0.1:8000/
+
+Note: No npm install is required. All 3D libraries are fetched automatically via CDN upon loading the page.
+📂 Project Structure
+
+    /backend - Configuration Center: Contains global Django settings (settings.py) and the main URL router.
+
+    /core - Application Logic: Main business logic, database models, and API views (views.py).
+
+    /core/orbital_engine.py - The Heart of the System: Custom SGP4 implementation for TLE fetching, trajectory calculation, and coordinate conversion.
+
+    /core/templates/ - Presentation Layer: Contains index.html which handles the Globe.gl initialization, HUD panels, and AJAX/Fetch API communication.
+
+📄 License
+
+This project is open-source.
