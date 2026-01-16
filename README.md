@@ -10,7 +10,7 @@
 ---
 
 <div align="center">
-  <img src="assets/screenshot.png" alt="SkyGuard Dashboard" width="800" />
+  <img src="screenshot.png" alt="SkyGuard Dashboard" width="800" />
   <p><em>Real-time satellite tracking interface with Cyberpunk HUD styling</em></p>
 </div>
 
