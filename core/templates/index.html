@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SkyGuard Orbital</title>
+    <script src="//unpkg.com/globe.gl"></script>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        #globeViz {
+            z-index: 1;
+        }
+
+        /* LEFT HUD STYLES */
+        .hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            padding: 20px;
+            color: #0ff;
+            width: 300px;
+            pointer-events: none;
+        }
+
+        h1 {
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #0ff;
+            font-size: 24px;
+        }
+
+        .system-btn {
+            margin-top: 10px;
+            border: 1px solid #044;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0aa;
+            cursor: pointer;
+            padding: 5px 10px;
+            font-size: 10px;
+            pointer-events: auto;
+        }
+
+        /* TELEMETRY PANEL (Moved to Left) */
+        #telemetry-panel {
+            margin-top: 30px;
+            border: 1px solid #0f0;
+            background: rgba(0, 20, 0, 0.9);
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+            display: none;
+            pointer-events: auto;
+        }
+
+        .data-label {
+            color: #aaa;
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+
+        .data-value {
+            color: #fff;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #fff;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .unit {
+            font-size: 12px;
+            color: #0f0;
+        }
+
+        .btn-disengage {
+            width: 100%;
+            margin-top: 10px;
+            background: transparent;
+            border: 1px solid #f00;
+            color: #f00;
+            padding: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-disengage:hover {
+            background: #f00;
+            color: #000;
+        }
+
+        /* RIGHT SIDEBAR STYLES */
+        .sidebar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            background: rgba(0, 10, 20, 0.85);
+            border-left: 1px solid #0ff;
+            padding: 20px;
+            z-index: 10;
+            overflow-y: auto;
+            pointer-events: auto;
+            box-shadow: -5px 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        h3 {
+            border-bottom: 1px solid #044;
+            padding-bottom: 5px;
+            margin-top: 20px;
+            color: #0ff;
+        }
+
+        .sat-item {
+            padding: 8px;
+            border-bottom: 1px solid #044;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        .sat-item:hover {
+            background: rgba(0, 255, 255, 0.1);
+            color: #fff;
+            padding-left: 15px;
+        }
+
+        select {
+            width: 100%;
+            background: #000;
+            color: #0ff;
+            border: 1px solid #0ff;
+            padding: 5px;
+            outline: none;
+        }
+
+        #about-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            background: rgba(0, 10, 20, 0.95);
+            border: 1px solid #0ff;
+            padding: 20px;
+            z-index: 100;
+            color: #fff;
+        }
+
+        .close-btn {
+            width: 100%;
+            background: #0ff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hud">
+        <h1>SkyGuard Orbital</h1>
+        <div style="font-size: 10px; color: #666; margin-bottom: 10px;">SYSTEM ONLINE | v1.2-STABLE</div>
+        <div>Active Assets: <span id="count" style="color:#fff">0</span></div>
+        <button onclick="showAbout()" class="system-btn">SYSTEM SPECS</button>
+
+        <div id="telemetry-panel">
+            <h3 id="sel-name"
+                style="margin:0; color:#0f0; border:none; margin-bottom:15px; border-bottom:1px solid #0f0;">TARGET</h3>
+
+            <span class="data-label">ORBITAL VELOCITY</span>
+            <span class="data-value"><span id="sel-speed">--</span> <span class="unit">km/h</span></span>
+
+            <span class="data-label">ALTITUDE (AGL)</span>
+            <span class="data-value"><span id="sel-alt">--</span> <span class="unit">km</span></span>
+
+            <button class="btn-disengage" onclick="disengageLock()">[ X ] Disengage</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h3>PASS PREDICTOR</h3>
+        <select id="country-select" onchange="predictPasses()">
+            <option>POLAND (Warsaw)</option>
+            <option>USA (Washington DC)</option>
+            <option>CHINA (Beijing)</option>
+            <option>UK (London)</option>
+            <option>JAPAN (Tokyo)</option>
+            <option>RUSSIA (Moscow)</option>
+        </select>
+        <div id="prediction-results" style="margin-top: 10px; min-height: 50px;"></div>
+
+        <h3>TARGET LIST</h3>
+        <div id="target-list" style="height: 400px; overflow-y: auto;">Loading assets...</div>
+    </div>
+
+    <div id="globeViz"></div>
+
+    <div id="about-modal">
+        <h2 style="border-bottom:1px solid #0ff; padding-bottom:10px; margin-top:0;">ENGINEERING SPECIFICATION</h2>
+        <p><strong>CORE:</strong> Django 5.0 High-Performance Node</p>
+        <p><strong>PHYSICS:</strong> SGP4 (Simplified General Perturbations) Propagation Model</p>
+        <p><strong>VISUALIZATION:</strong> WebGL / Three.js Event Horizon Renderer</p>
+        <p><strong>DATA SOURCE:</strong> NORAD / CelesTrak Telemetry Stream</p>
+        <p style="font-size:10px; color:#aaa;">COMPLIANT WITH GOOGLE ANTIGRAVITY PROFESSIONAL STANDARDS v4.2</p>
+        <button onclick="document.getElementById('about-modal').style.display='none'" class="close-btn">CLOSE
+            TERMINAL</button>
+    </div>
+
+    <script>
+        let followingSatName = null;
+        let latestSatData = [];
+
+        const globe = Globe()
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+            .pointOfView({ altitude: 2.5 })
+            .pointColor(() => '#00ffff')
+            .pointAltitude('alt')
+            .pointRadius(0.5)
+            .pointLabel('name')
+            .onPointClick(sat => engageLock(sat))
+            .pathColor(() => 'rgba(0, 255, 255, 0.8)')
+            .pathDashLength(0.05)
+            .pathDashGap(0.02)
+            .pathDashAnimateTime(1500)
+            .pathStroke(2)
+            (document.getElementById('globeViz'));
+
+        function updateData() {
+            fetch('/api/satellites/')
+                .then(r => r.json())
+                .then(d => {
+                    latestSatData = d.assets;
+                    globe.pointsData(latestSatData);
+                    document.getElementById('count').innerText = latestSatData.length;
+                    renderList(latestSatData);
+
+                    if (followingSatName) {
+                        const sat = latestSatData.find(s => s.name === followingSatName);
+                        if (sat) {
+                            globe.pointOfView({ lat: sat.lat, lng: sat.lng, altitude: 1.5 }, 500);
+                            document.getElementById('sel-speed').innerText = sat.speed;
+                            document.getElementById('sel-alt').innerText = sat.real_alt;
+                        }
+                    }
+                });
+        }
+
+        function renderList(sats) {
+            const listDiv = document.getElementById('target-list');
+            if (listDiv.childElementCount > 0) return;
+            listDiv.innerHTML = '';
+            sats.forEach(sat => {
+                const btn = document.createElement('div');
+                btn.className = 'sat-item';
+                btn.innerText = "🔭 " + sat.name;
+                btn.onclick = () => engageLock(sat);
+                listDiv.appendChild(btn);
+            });
+        }
+
+        function engageLock(sat) {
+            followingSatName = sat.name;
+            document.getElementById('telemetry-panel').style.display = 'block';
+            document.getElementById('sel-name').innerText = sat.name;
+            document.getElementById('sel-speed').innerText = sat.speed;
+            document.getElementById('sel-alt').innerText = sat.real_alt;
+
+            fetch(`/api/trajectory/?name=${encodeURIComponent(sat.name)}`)
+                .then(r => r.json())
+                .then(d => globe.pathsData(d.path));
+        }
+
+        function disengageLock() {
+            followingSatName = null;
+            document.getElementById('telemetry-panel').style.display = 'none';
+            globe.pathsData([]);
+        }
+
+        function predictPasses() {
+            const country = document.getElementById('country-select').value;
+            document.getElementById('prediction-results').innerHTML = '<div style="color:#0ff; font-size:10px;">CALCULATING ORBITS...</div>';
+
+            fetch(`/api/predict/?country=${country}`)
+                .then(r => r.json())
+                .then(d => {
+                    const div = document.getElementById('prediction-results');
+                    div.innerHTML = '<table style="width:100%; font-size:11px; color:#aaa;"><tr><th style="text-align:left">SAT</th><th style="text-align:right">ARRIVAL (PL)</th></tr></table>';
+
+                    d.predictions.forEach(p => {
+                        const color = p.minutes_away < 60 ? '#0f0' : (p.minutes_away === 9999 ? '#444' : '#fff');
+                        const row = `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #222; padding:4px; color:${color}">
+                            <span>${p.name}</span>
+                            <span>${p.time}</span>
+                        </div>`;
+                        div.innerHTML += row;
+                    });
+                });
+        }
+
+        function showAbout() {
+            document.getElementById('about-modal').style.display = 'block';
+        }
+
+        setInterval(updateData, 2000);
+        updateData();
+        setTimeout(predictPasses, 1000);
+    </script>
+</body>
+
+</html>
